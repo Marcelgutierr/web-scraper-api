@@ -4,7 +4,21 @@ import * as cheerio from "cheerio";
 export const scrapeWithCheerio = async (url: string) => {
     try {
         //1.- Descargar el HTML
-        const { data:html} = await axios.get(url);
+        const { data:html} = await axios.get(url, {
+            headers: {
+                "User-Agent": "Mozilla/5.0 (compatible; MarcelBot/1.0)"
+        },
+            timeout: 8000, // 8 segundos
+        });
+
+        if(!html || html.length < 50) {
+            return {
+                ok:false,
+                error: "El contenido HTML es demasiado corto o está vacío.",
+            }
+        }
+    
+
 
         //2.- Cargar HTML en Cheerio
         const $ = cheerio.load(html);
@@ -34,9 +48,14 @@ export const scrapeWithCheerio = async (url: string) => {
             ok:true,
             url,
             title,
-            description,
-            headings,
-            links,
+            metadata: {
+                description,
+                headings,
+            },
+            content: {
+                headings,
+                links,
+            },
         };
     } catch (error: any) {
         return {

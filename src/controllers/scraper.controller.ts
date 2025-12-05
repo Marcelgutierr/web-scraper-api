@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
-import { scrapeWithCheerio } from "../services/scraper.service";   
+import { scrapeWithCheerio } from "../services/scraper.service";
+import { isValidURL } from "../utils/validateURL";
+import { blockedDomains } from "../utils/blockedDomains"; 
 
 
 // export const runScraper = async (req: Request, res: Response) => {
@@ -41,6 +43,24 @@ export const scrapeController = async (req: Request, res: Response) => {
         return res.status(400).json({
             ok: false,
             message: "Debe proporcionar una URL válida en ?url=",
+        });
+    }
+
+    //Validación de URL
+    if(!isValidURL(url)) {
+        return res.status(400).json({
+            ok: false,
+            message: "La URL proporcionada no es válida.",
+        });
+    }
+
+    //Evitar scraping de dominios bloqueados
+    const hostname = new URL(url).hostname;
+    
+    if(blockedDomains.includes(hostname)) {
+        return res.status(403).json({
+            ok: false,
+            message: "El dominio proporcionado está bloqueado.",
         });
     }
 
